@@ -1,9 +1,11 @@
 package com.springbootapi.service.impl;
 
+import com.springbootapi.entity.Category;
 import com.springbootapi.entity.Post;
 import com.springbootapi.exception.ResourceNotFoundException;
 import com.springbootapi.payload.PostDto;
 import com.springbootapi.payload.PostResponse;
+import com.springbootapi.repository.CategoryRepository;
 import com.springbootapi.repository.PostRepository;
 import com.springbootapi.service.PostService;
 import jakarta.transaction.Transactional;
@@ -26,16 +28,23 @@ public class PostServiceImpl implements PostService {
     private PostRepository postRepository;
 
     private ModelMapper mapper;
+    private CategoryRepository categoryRepository;
 
-    public PostServiceImpl(PostRepository postRepository, ModelMapper mapper) {
+    public PostServiceImpl(PostRepository postRepository,
+                           ModelMapper mapper,
+                           CategoryRepository categoryRepository) {
         this.postRepository = postRepository;
         this.mapper = mapper;
+        this.categoryRepository=categoryRepository;
     }
 
     @Override
     @Transactional
     public PostDto createPost(PostDto postDto) {
+        Category category = categoryRepository.findById(postDto.getCategoryId()).orElseThrow(()->
+                new ResourceNotFoundException("Category","id",postDto.getCategoryId()));
         Post post = mapToEntity(postDto);
+        post.setCategory(category);
         Post newPost = postRepository.save(post);
         PostDto postResponse = mapToDto(newPost);
         return postResponse;
