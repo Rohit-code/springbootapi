@@ -72,11 +72,14 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto updatePost(PostDto postDto, long id) {
-        Post post = postRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Post","id",id));
+        Post post = postRepository.findById(id).orElseThrow(
+                ()-> new ResourceNotFoundException("Post","id",id));
+        Category category=categoryRepository.findById(postDto.getCategoryId()).orElseThrow(
+                ()->new ResourceNotFoundException("category","id",postDto.getCategoryId()));
         post.setTitle(postDto.getTitle());
         post.setDescription(postDto.getDescription());
         post.setContent(postDto.getContent());
-
+        post.setCategory(category);
         Post updateedPost = postRepository.save(post);
         return mapToDto(updateedPost);
     }
@@ -86,6 +89,14 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Post","Id",id));
         postRepository.delete(post);
 
+    }
+
+    @Override
+    public List<PostDto> getPostByCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(
+                ()->new ResourceNotFoundException("Category","id",categoryId));
+        List<Post> posts = postRepository.findByCategoryId(categoryId);
+        return posts.stream().map((post)->mapToDto(post)).collect(Collectors.toList());
     }
 
     //converted entity into dto
