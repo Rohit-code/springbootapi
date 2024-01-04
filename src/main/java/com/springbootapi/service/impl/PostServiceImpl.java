@@ -1,9 +1,11 @@
 package com.springbootapi.service.impl;
 
+import com.springbootapi.entity.Category;
 import com.springbootapi.entity.Post;
 import com.springbootapi.exception.ResourceNotFoundException;
 import com.springbootapi.payload.PostDto;
 import com.springbootapi.payload.PostResponse;
+import com.springbootapi.repository.CategoryRepository;
 import com.springbootapi.repository.PostRepository;
 import com.springbootapi.service.PostService;
 import jakarta.transaction.Transactional;
@@ -24,11 +26,13 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService {
 
     private PostRepository postRepository;
+    private CategoryRepository categoryRepository;
 
     private ModelMapper mapper;
 
-    public PostServiceImpl(PostRepository postRepository, ModelMapper mapper) {
+    public PostServiceImpl(PostRepository postRepository, ModelMapper mapper, CategoryRepository categoryRepository) {
         this.postRepository = postRepository;
+        this.categoryRepository = categoryRepository;
         this.mapper = mapper;
     }
 
@@ -74,14 +78,14 @@ public class PostServiceImpl implements PostService {
     public PostDto updatePost(PostDto postDto, long id) {
         Post post = postRepository.findById(id).orElseThrow(
                 ()-> new ResourceNotFoundException("Post","id",id));
-        Category category=categoryRepository.findById(postDto.getCategoryId()).orElseThrow(
-                ()->new ResourceNotFoundException("category","id",postDto.getCategoryId()));
+        Category category =categoryRepository.findById(id).orElseThrow(
+                ()->new ResourceNotFoundException("Category", "id",id));
         post.setTitle(postDto.getTitle());
         post.setDescription(postDto.getDescription());
         post.setContent(postDto.getContent());
         post.setCategory(category);
-        Post updateedPost = postRepository.save(post);
-        return mapToDto(updateedPost);
+        Post updatedPost = postRepository.save(post);
+        return mapToDto(updatedPost);
     }
 
     @Override
